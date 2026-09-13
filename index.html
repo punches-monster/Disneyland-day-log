@@ -10,27 +10,28 @@
 <style>
 :root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color-scheme:light dark}
 *{box-sizing:border-box} body{margin:0;background:Canvas;color:CanvasText}
-.app{max-width:720px;margin:0 auto;padding:12px 12px 90px}
-header{position:sticky;top:0;z-index:10;background:color-mix(in srgb,Canvas 94%,transparent);backdrop-filter:blur(10px);padding:8px 0 10px;border-bottom:1px solid color-mix(in srgb,CanvasText 14%,transparent)}
-h1{font-size:1.25rem;margin:0 0 8px}.sub{font-size:.82rem;opacity:.7;margin-bottom:8px}
+.app{max-width:720px;margin:0 auto;padding:10px 10px 96px}
+header{position:sticky;top:0;z-index:10;background:color-mix(in srgb,Canvas 94%,transparent);backdrop-filter:blur(10px);padding:6px 0 8px;border-bottom:1px solid color-mix(in srgb,CanvasText 14%,transparent)}.compactHeader{display:grid;gap:6px}
+h1{font-size:1.15rem;margin:0}.sub{font-size:.76rem;opacity:.7;margin:0}
 .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
 button,input,textarea{font:inherit}.seg button,.toolbar button,.ride,.action{border:1px solid color-mix(in srgb,CanvasText 18%,transparent);background:color-mix(in srgb,CanvasText 5%,Canvas);color:CanvasText;border-radius:12px;padding:11px 12px}
 .seg button.active{background:CanvasText;color:Canvas}.search{width:100%;padding:12px;border-radius:12px;border:1px solid color-mix(in srgb,CanvasText 18%,transparent);background:Canvas}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.stat{padding:10px;border:1px solid color-mix(in srgb,CanvasText 14%,transparent);border-radius:12px;text-align:center}.stat b{display:block;font-size:1.15rem}.stat span{font-size:.72rem;opacity:.65}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:10px 0}.stat{padding:10px;border:1px solid color-mix(in srgb,CanvasText 14%,transparent);border-radius:12px;text-align:center}.stat b{display:block;font-size:1.15rem}.stat span{font-size:.72rem;opacity:.65}
 section{margin-top:16px}.section-title{font-weight:700;font-size:.9rem;margin:0 0 8px}.rides{display:grid;grid-template-columns:1fr;gap:8px}
 .ride{display:flex;align-items:center;justify-content:space-between;text-align:left;min-height:52px}.ride:active{transform:scale(.99)}.ride-name{font-weight:650}.ride-meta{font-size:.74rem;opacity:.65;margin-top:2px}.badge{min-width:30px;height:30px;border-radius:999px;display:grid;place-items:center;background:color-mix(in srgb,CanvasText 10%,Canvas);font-weight:700}
-.log{display:flex;flex-direction:column;gap:7px}.entry{border:1px solid color-mix(in srgb,CanvasText 14%,transparent);border-radius:12px;padding:10px}.entry-top{display:flex;justify-content:space-between;gap:8px}.entry-name{font-weight:650}.entry-time{white-space:nowrap;opacity:.65}.entry-note{font-size:.82rem;opacity:.8;margin-top:4px}
-.toolbar{display:flex;gap:7px;overflow:auto;padding-bottom:2px}.toolbar button{white-space:nowrap;padding:9px 10px}.danger{border-color:#b44!important}.muted{opacity:.65}.hidden{display:none!important}
+.log{display:flex;flex-direction:column;gap:7px}.entry{border:1px solid color-mix(in srgb,CanvasText 14%,transparent);border-radius:12px;padding:10px}.entry-top{display:flex;justify-content:space-between;gap:8px}.entry-name{font-weight:650}.entry-time{white-space:nowrap;opacity:.65}.entry-note{font-size:.82rem;opacity:.8;margin-top:4px}.entry-actions{display:flex;gap:6px;margin-top:7px}.entry-actions button{padding:6px 8px;border-radius:9px;border:1px solid color-mix(in srgb,CanvasText 18%,transparent);background:color-mix(in srgb,CanvasText 4%,Canvas);color:CanvasText;font-size:.76rem}
+.toolbar{display:flex;gap:7px;overflow:auto;padding-bottom:2px;scrollbar-width:none}.toolbar::-webkit-scrollbar{display:none}.toolbar button{white-space:nowrap;padding:9px 10px}.danger{border-color:#b44!important}.muted{opacity:.65}.hidden{display:none!important}
 .custom{display:grid;grid-template-columns:1fr auto;gap:8px}.custom input{padding:12px;border-radius:12px;border:1px solid color-mix(in srgb,CanvasText 18%,transparent);background:Canvas}.custom button{border-radius:12px;padding:0 16px;border:1px solid color-mix(in srgb,CanvasText 18%,transparent);background:CanvasText;color:Canvas}
 .noteBox{width:100%;min-height:68px;padding:10px;border-radius:12px;border:1px solid color-mix(in srgb,CanvasText 18%,transparent);background:Canvas;margin-top:8px}.diningGrid{display:grid;grid-template-columns:1fr;gap:8px}.diningGrid input,.diningGrid textarea{width:100%;padding:12px;border-radius:12px;border:1px solid color-mix(in srgb,CanvasText 18%,transparent);background:Canvas}.diningGrid textarea{min-height:58px}.diningGrid button{border-radius:12px;padding:12px;border:1px solid color-mix(in srgb,CanvasText 18%,transparent);background:CanvasText;color:Canvas;font-weight:700}.entry-kind{font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;opacity:.55;margin-bottom:2px}
-.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:CanvasText;color:Canvas;padding:10px 14px;border-radius:999px;font-size:.85rem;opacity:0;pointer-events:none;transition:.2s;z-index:99}.toast.show{opacity:1}
+.lastAction{margin:10px 0 0;padding:9px 10px;border:1px solid color-mix(in srgb,CanvasText 14%,transparent);border-radius:12px;font-size:.82rem}.recentActions{display:flex;gap:7px;overflow:auto;padding-bottom:2px}.recentActions button{white-space:nowrap;padding:8px 10px;border-radius:999px;border:1px solid color-mix(in srgb,CanvasText 18%,transparent);background:color-mix(in srgb,CanvasText 4%,Canvas);color:CanvasText}.backTop{position:fixed;right:14px;bottom:18px;z-index:50;border:1px solid color-mix(in srgb,CanvasText 18%,transparent);background:CanvasText;color:Canvas;border-radius:999px;padding:10px 13px;box-shadow:0 4px 16px color-mix(in srgb,CanvasText 18%,transparent)}.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:CanvasText;color:Canvas;padding:10px 14px;border-radius:999px;font-size:.85rem;opacity:0;pointer-events:none;transition:.2s;z-index:99}.toast.show{opacity:1}
 .savebar{margin:10px 0 0;padding:9px 10px;border:1px solid color-mix(in srgb,CanvasText 14%,transparent);border-radius:12px;font-size:.78rem;display:flex;justify-content:space-between;gap:8px;align-items:center}.saveok{font-weight:700}.backupPrompt{margin-top:8px;padding:10px;border:1px solid color-mix(in srgb,CanvasText 20%,transparent);border-radius:12px}.backupPrompt button{margin-top:7px;width:100%}footer{font-size:.75rem;opacity:.6;margin-top:24px;text-align:center}
-@media (min-width:540px){.rides{grid-template-columns:1fr 1fr}}
+@media (max-width:420px){.stats{grid-template-columns:repeat(2,1fr)}.stat{padding:8px}.seg button,.ride,.action{padding:10px}.search{padding:10px}}@media (min-width:540px){.rides{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
 <div class="app">
 <header>
+  <div class="compactHeader">
   <h1>Disneyland Quick Check-In</h1>
   <div class="sub">Tap an attraction when you ride it. Everything stays on this phone until you export it.</div>
   <div class="seg">
@@ -39,14 +40,17 @@ section{margin-top:16px}.section-title{font-weight:700;font-size:.9rem;margin:0 
   </div>
   <input id="search" class="search" placeholder="Search attractions…" oninput="renderRides()" />
   <div class="savebar"><span id="saveState" class="saveok">Loading saved data…</span><span id="saveTime">—</span></div>
-  <div id="backupPrompt" class="backupPrompt hidden"><b>Extra backup recommended</b><div class="muted">You have made 5 more check-ins since your last downloaded backup.</div><button class="action" onclick="backupNow()">Download backup now</button></div>
+  <div id="backupPrompt" class="backupPrompt hidden"><b>Extra backup recommended</b><div id="backupDelta" class="muted">0 entries since your last downloaded backup.</div><button class="action" onclick="backupNow()">Download backup now</button></div>
+  </div>
 </header>
 
 <div class="stats">
   <div class="stat"><b id="totalCount">0</b><span>check-ins</span></div>
   <div class="stat"><b id="uniqueCount">0</b><span>unique</span></div>
+  <div class="stat"><b id="diningCount">0</b><span>dining</span></div>
   <div class="stat"><b id="lastTime">—</b><span>last</span></div>
 </div>
+<div id="lastAction" class="lastAction muted">Nothing logged yet.</div>
 
 <section>
   <div class="section-title">Quick add</div>
@@ -55,6 +59,11 @@ section{margin-top:16px}.section-title{font-weight:700;font-size:.9rem;margin:0 
     <button onclick="addCustom()">Add</button>
   </div>
   <textarea id="pendingNote" class="noteBox" placeholder="Optional note for next check-in (seat, breakdown, child reaction, etc.)"></textarea>
+</section>
+
+<section>
+  <div class="section-title">Recent</div>
+  <div id="recentActions" class="recentActions"><span class="muted">Recent actions will appear here.</span></div>
 </section>
 
 <section>
@@ -88,6 +97,7 @@ section{margin-top:16px}.section-title{font-weight:700;font-size:.9rem;margin:0 
 </section>
 <footer>Offline-friendly • dual local storage • use Chrome on Android • download a backup during the day</footer>
 </div>
+<button id="backTop" class="backTop hidden" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ Top</button>
 <div id="toast" class="toast"></div>
 <script>
 const STORAGE_KEY='disneyland_quick_checkin_v1';
@@ -125,7 +135,7 @@ function updateSaveUI(ok=true,msg='Saved locally'){
 }
 function snapshotFrom(log){return {version:1,updatedAt:Date.now(),checkins:log}}
 function backupMeta(){return safeParse(localStorage.getItem(BACKUP_META_KEY),{lastDownloadedCount:0})||{lastDownloadedCount:0}}
-function updateBackupPrompt(){const el=document.getElementById('backupPrompt');if(!el)return;const delta=memoryLog.length-(backupMeta().lastDownloadedCount||0);el.classList.toggle('hidden',delta<5)}
+function updateBackupPrompt(){const el=document.getElementById('backupPrompt'),txt=document.getElementById('backupDelta');if(!el)return;const delta=Math.max(0,memoryLog.length-(backupMeta().lastDownloadedCount||0));if(txt)txt.textContent=delta+' '+(delta===1?'entry':'entries')+' since your last downloaded backup.';el.classList.toggle('hidden',delta<5)}
 function saveLog(log){
  memoryLog=Array.isArray(log)?log:[];
  const snap=snapshotFrom(memoryLog);lastSavedAt=snap.updatedAt;
@@ -152,14 +162,19 @@ function setPark(p){currentPark=p;document.getElementById('tabDL').classList.tog
 function addCheckin(name,land,park=currentPark){const log=loadLog();const note=document.getElementById('pendingNote').value.trim();log.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random(),park,attraction:name,land:land||'',timestamp:new Date().toISOString(),note});saveLog(log);document.getElementById('pendingNote').value='';renderAll();toast('Checked in: '+name)}
 function addCustom(){const el=document.getElementById('customAttraction');const name=el.value.trim();if(!name)return;addCheckin(name,'Custom',currentPark);el.value=''}
 function addDiningEntry(){const loc=document.getElementById('diningLocation').value.trim();if(!loc)return toast('Enter a dining location');const items=document.getElementById('diningItems').value.trim();const note=document.getElementById('diningNote').value.trim();const log=loadLog();log.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random(),type:'dining',dining_location:loc,items,timestamp:new Date().toISOString(),note});saveLog(log);document.getElementById('diningLocation').value='';document.getElementById('diningItems').value='';document.getElementById('diningNote').value='';renderAll();toast('Dining logged: '+loc)}
+function findEntryIndex(id){return loadLog().findIndex(x=>String(x.id)===String(id))}
+function deleteEntry(id){const log=loadLog();const i=findEntryIndex(id);if(i<0)return;const x=log[i];if(!confirm('Delete this '+(x.type==='dining'?'dining entry':'attraction check-in')+'?'))return;log.splice(i,1);saveLog(log);renderAll();toast('Entry deleted')}
+function editEntry(id){const log=loadLog();const i=findEntryIndex(id);if(i<0)return;const x=log[i];if(x.type==='dining'){const loc=prompt('Dining location',x.dining_location||'');if(loc===null)return;const items=prompt('What did you get?',x.items||'');if(items===null)return;const note=prompt('Note',x.note||'');if(note===null)return;x.dining_location=loc.trim()||x.dining_location;x.items=items.trim();x.note=note.trim()}else{const name=prompt('Attraction / show',x.attraction||'');if(name===null)return;const note=prompt('Note',x.note||'');if(note===null)return;x.attraction=name.trim()||x.attraction;x.note=note.trim()}saveLog(log);renderAll();toast('Entry updated')}
+function repeatEntry(id){const x=loadLog().find(v=>String(v.id)===String(id));if(!x)return;if(x.type==='dining'){const log=loadLog();log.push({...x,id:crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random(),timestamp:new Date().toISOString()});saveLog(log);renderAll();toast('Dining logged: '+x.dining_location)}else addCheckin(x.attraction,x.land,x.park)}
 function undoLast(){const log=loadLog();if(!log.length)return toast('Nothing to undo');const x=log.pop();saveLog(log);renderAll();toast('Removed: '+(x.type==='dining'?x.dining_location:x.attraction))}
 function clearAll(){if(!loadLog().length)return;if(confirm('Clear every check-in saved on this phone? Export first if you need them.')){saveLog([]);renderAll();toast('Day cleared')}}
 function countsByName(){const m={};for(const x of loadLog()){if(x.type==='dining')continue;m[x.park+'|'+x.attraction]=(m[x.park+'|'+x.attraction]||0)+1}return m}
 function renderRides(){const q=document.getElementById('search').value.trim().toLowerCase();const counts=countsByName();const root=document.getElementById('rides');root.innerHTML='';for(const [name,land] of attractions[currentPark]){if(q && !(name+' '+land).toLowerCase().includes(q))continue;const b=document.createElement('button');b.className='ride';const count=counts[currentPark+'|'+name]||0;b.innerHTML=`<div><div class="ride-name"></div><div class="ride-meta"></div></div><div class="badge">${count||'+'}</div>`;b.querySelector('.ride-name').textContent=name;b.querySelector('.ride-meta').textContent=land;b.onclick=()=>addCheckin(name,land,currentPark);root.appendChild(b)}}
-function renderLog(){const log=loadLog();const root=document.getElementById('log');root.innerHTML='';if(!log.length){root.innerHTML='<div class="muted">No entries yet.</div>';return}for(const x of [...log].reverse()){const e=document.createElement('div');e.className='entry';e.innerHTML=`<div class="entry-top"><div><div class="entry-kind"></div><span class="entry-name"></span><div class="ride-meta"></div></div><div class="entry-time"></div></div><div class="entry-note hidden"></div>`;const dining=x.type==='dining';e.querySelector('.entry-kind').textContent=dining?'Dining':'Attraction';e.querySelector('.entry-name').textContent=dining?x.dining_location:x.attraction;e.querySelector('.ride-meta').textContent=dining?(x.items||'Meal / snack'):(x.park==='DL'?'Disneyland':'DCA')+(x.land?' • '+x.land:'');e.querySelector('.entry-time').textContent=fmtTime(x.timestamp);if(x.note){const n=e.querySelector('.entry-note');n.textContent=x.note;n.classList.remove('hidden')}root.appendChild(e)}}
-function renderStats(){const log=loadLog();const rides=log.filter(x=>x.type!=='dining');document.getElementById('totalCount').textContent=rides.length;document.getElementById('uniqueCount').textContent=new Set(rides.map(x=>x.park+'|'+x.attraction)).size;document.getElementById('lastTime').textContent=log.length?fmtTime(log[log.length-1].timestamp):'—'}
+function renderLog(){const log=loadLog();const root=document.getElementById('log');root.innerHTML='';if(!log.length){root.innerHTML='<div class="muted">Nothing logged yet. Tap an attraction or add a dining entry.</div>';return}for(const x of [...log].reverse()){const e=document.createElement('div');e.className='entry';e.innerHTML=`<div class="entry-top"><div><div class="entry-kind"></div><span class="entry-name"></span><div class="ride-meta"></div></div><div class="entry-time"></div></div><div class="entry-note hidden"></div><div class="entry-actions"><button class="repeatBtn">Repeat</button><button class="editBtn">Edit</button><button class="deleteBtn">Delete</button></div>`;const dining=x.type==='dining';e.querySelector('.entry-kind').textContent=dining?'Dining':'Attraction';e.querySelector('.entry-name').textContent=dining?x.dining_location:x.attraction;e.querySelector('.ride-meta').textContent=dining?(x.items||'Meal / snack'):(x.park==='DL'?'Disneyland':'DCA')+(x.land?' • '+x.land:'');e.querySelector('.entry-time').textContent=fmtTime(x.timestamp);if(x.note){const n=e.querySelector('.entry-note');n.textContent=x.note;n.classList.remove('hidden')}e.querySelector('.repeatBtn').onclick=()=>repeatEntry(x.id);e.querySelector('.editBtn').onclick=()=>editEntry(x.id);e.querySelector('.deleteBtn').onclick=()=>deleteEntry(x.id);root.appendChild(e)}}
+function renderStats(){const log=loadLog();const rides=log.filter(x=>x.type!=='dining'),dining=log.filter(x=>x.type==='dining');document.getElementById('totalCount').textContent=rides.length;document.getElementById('uniqueCount').textContent=new Set(rides.map(x=>x.park+'|'+x.attraction)).size;document.getElementById('diningCount').textContent=dining.length;document.getElementById('lastTime').textContent=log.length?fmtTime(log[log.length-1].timestamp):'—';const la=document.getElementById('lastAction');if(la){if(!log.length){la.textContent='Nothing logged yet.';la.classList.add('muted')}else{const x=log[log.length-1],name=x.type==='dining'?x.dining_location:x.attraction;la.textContent='Last: '+(x.type==='dining'?'Dining • ':'')+name+' • '+fmtTime(x.timestamp);la.classList.remove('muted')}}}
 function renderDiningRecent(){const dl=document.getElementById('recentDiningLocations');if(!dl)return;const seen=new Set();dl.innerHTML='';for(const x of [...loadLog()].reverse()){if(x.type!=='dining'||!x.dining_location||seen.has(x.dining_location))continue;seen.add(x.dining_location);const o=document.createElement('option');o.value=x.dining_location;dl.appendChild(o);if(seen.size>=8)break}}
-function renderAll(){renderRides();renderLog();renderStats();renderDiningRecent()}
+function renderRecentActions(){const root=document.getElementById('recentActions');if(!root)return;root.innerHTML='';const seen=new Set(),recent=[];for(const x of [...loadLog()].reverse()){const key=x.type==='dining'?'d|'+x.dining_location:'a|'+x.park+'|'+x.attraction;if(seen.has(key))continue;seen.add(key);recent.push(x);if(recent.length>=5)break}if(!recent.length){root.innerHTML='<span class="muted">Recent actions will appear here.</span>';return}for(const x of recent){const b=document.createElement('button');b.textContent='↻ '+(x.type==='dining'?x.dining_location:x.attraction);b.onclick=()=>repeatEntry(x.id);root.appendChild(b)}}
+function renderAll(){renderRides();renderLog();renderStats();renderDiningRecent();renderRecentActions();updateBackupPrompt()}
 function download(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
 function csvEscape(v){v=String(v??'');return /[",\n]/.test(v)?'"'+v.replaceAll('"','""')+'"':v}
 function exportCSV(){const log=loadLog();const rows=[['date','time','timestamp','entry_type','park','attraction','land','dining_location','items','note'],...log.map(x=>[fmtDate(x.timestamp),fmtTime(x.timestamp),x.timestamp,x.type==='dining'?'dining':'attraction',x.park||'',x.attraction||'',x.land||'',x.dining_location||'',x.items||'',x.note||''])];download('disney_day_log_'+new Date().toISOString().slice(0,10)+'.csv',rows.map(r=>r.map(csvEscape).join(',')).join('\n'),'text/csv')}
@@ -168,6 +183,7 @@ function exportJSON(){download('disney_checkins_'+new Date().toISOString().slice
 function backupNow(){download('disney_checkins_BACKUP_'+new Date().toISOString().replace(/[:.]/g,'-')+'.json',JSON.stringify(backupPayload(),null,2),'application/json');localStorage.setItem(BACKUP_META_KEY,JSON.stringify({lastDownloadedCount:memoryLog.length,lastDownloadedAt:Date.now()}));updateBackupPrompt();toast('Backup downloaded')}
 function restoreBackup(){const inp=document.createElement('input');inp.type='file';inp.accept='.json,application/json';inp.onchange=()=>{const f=inp.files&&inp.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const obj=JSON.parse(rd.result);const arr=Array.isArray(obj)?obj:obj.checkins;if(!Array.isArray(arr))throw new Error('No check-ins found');if(!confirm('Restore '+arr.length+' check-ins from this backup? This replaces the current local log.'))return;saveLog(arr);renderAll();toast('Backup restored')}catch(e){alert('Could not restore this backup: '+e.message)}};rd.readAsText(f)};inp.click()}
 async function copyJSON(){const text=JSON.stringify(backupPayload(),null,2);try{await navigator.clipboard.writeText(text);toast('JSON copied')}catch(e){prompt('Copy this JSON:',text)}}
+window.addEventListener('scroll',()=>{const b=document.getElementById('backTop');if(b)b.classList.toggle('hidden',window.scrollY<700)},{passive:true});
 window.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&memoryLog.length)saveLog(memoryLog)});
 initializeStorage();
 if ('serviceWorker' in navigator) {
