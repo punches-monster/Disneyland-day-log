@@ -1,0 +1,10 @@
+{
+  "name": "Disneyland Day Log",
+  "short_name": "Day Log",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#111827",
+  "theme_color": "#111827",
+  "description": "Offline attraction check-in log for Disneyland Resort park days."
+}
