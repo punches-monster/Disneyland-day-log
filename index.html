@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#111827" />
+<link rel="manifest" href="./manifest.webmanifest" />
+<meta name="theme-color" content="#ffffff" />
+<title>Disneyland Quick Check-In</title>
+<style>
+:root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color-scheme:light dark}
+*{box-sizing:border-box} body{margin:0;background:Canvas;color:CanvasText}
+.app{max-width:720px;margin:0 auto;padding:12px 12px 90px}
+header{position:sticky;top:0;z-index:10;background:color-mix(in srgb,Canvas 94%,transparent);backdrop-filter:blur(10px);padding:8px 0 10px;border-bottom:1px solid color-mix(in srgb,CanvasText 14%,transparent)}
+h1{font-size:1.25rem;margin:0 0 8px}.sub{font-size:.82rem;opacity:.7;margin-bottom:8px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+button,input,textarea{font:inherit}.seg button,.toolbar button,.ride,.action{border:1px solid color-mix(in srgb,CanvasText 18%,transparent);background:color-mix(in srgb,CanvasText 5%,Canvas);color:CanvasText;border-radius:12px;padding:11px 12px}
+.seg button.active{background:CanvasText;color:Canvas}.search{width:100%;padding:12px;border-radius:12px;border:1px solid color-mix(in srgb,CanvasText 18%,transparent);background:Canvas}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.stat{padding:10px;border:1px solid color-mix(in srgb,CanvasText 14%,transparent);border-radius:12px;text-align:center}.stat b{display:block;font-size:1.15rem}.stat span{font-size:.72rem;opacity:.65}
+section{margin-top:16px}.section-title{font-weight:700;font-size:.9rem;margin:0 0 8px}.rides{display:grid;grid-template-columns:1fr;gap:8px}
+.ride{display:flex;align-items:center;justify-content:space-between;text-align:left;min-height:52px}.ride:active{transform:scale(.99)}.ride-name{font-weight:650}.ride-meta{font-size:.74rem;opacity:.65;margin-top:2px}.badge{min-width:30px;height:30px;border-radius:999px;display:grid;place-items:center;background:color-mix(in srgb,CanvasText 10%,Canvas);font-weight:700}
+.log{display:flex;flex-direction:column;gap:7px}.entry{border:1px solid color-mix(in srgb,CanvasText 14%,transparent);border-radius:12px;padding:10px}.entry-top{display:flex;justify-content:space-between;gap:8px}.entry-name{font-weight:650}.entry-time{white-space:nowrap;opacity:.65}.entry-note{font-size:.82rem;opacity:.8;margin-top:4px}
+.toolbar{display:flex;gap:7px;overflow:auto;padding-bottom:2px}.toolbar button{white-space:nowrap;padding:9px 10px}.danger{border-color:#b44!important}.muted{opacity:.65}.hidden{display:none!important}
+.custom{display:grid;grid-template-columns:1fr auto;gap:8px}.custom input{padding:12px;border-radius:12px;border:1px solid color-mix(in srgb,CanvasText 18%,transparent);background:Canvas}.custom button{border-radius:12px;padding:0 16px;border:1px solid color-mix(in srgb,CanvasText 18%,transparent);background:CanvasText;color:Canvas}
+.noteBox{width:100%;min-height:68px;padding:10px;border-radius:12px;border:1px solid color-mix(in srgb,CanvasText 18%,transparent);background:Canvas;margin-top:8px}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:CanvasText;color:Canvas;padding:10px 14px;border-radius:999px;font-size:.85rem;opacity:0;pointer-events:none;transition:.2s;z-index:99}.toast.show{opacity:1}
+.savebar{margin:10px 0 0;padding:9px 10px;border:1px solid color-mix(in srgb,CanvasText 14%,transparent);border-radius:12px;font-size:.78rem;display:flex;justify-content:space-between;gap:8px;align-items:center}.saveok{font-weight:700}.backupPrompt{margin-top:8px;padding:10px;border:1px solid color-mix(in srgb,CanvasText 20%,transparent);border-radius:12px}.backupPrompt button{margin-top:7px;width:100%}footer{font-size:.75rem;opacity:.6;margin-top:24px;text-align:center}
+@media (min-width:540px){.rides{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <h1>Disneyland Quick Check-In</h1>
+  <div class="sub">Tap an attraction when you ride it. Everything stays on this phone until you export it.</div>
+  <div class="seg">
+    <button id="tabDL" class="active" onclick="setPark('DL')">Disneyland</button>
+    <button id="tabDCA" onclick="setPark('DCA')">DCA</button>
+  </div>
+  <input id="search" class="search" placeholder="Search attractions…" oninput="renderRides()" />
+  <div class="savebar"><span id="saveState" class="saveok">Loading saved data…</span><span id="saveTime">—</span></div>
+  <div id="backupPrompt" class="backupPrompt hidden"><b>Extra backup recommended</b><div class="muted">You have made 5 more check-ins since your last downloaded backup.</div><button class="action" onclick="backupNow()">Download backup now</button></div>
+</header>
+
+<div class="stats">
+  <div class="stat"><b id="totalCount">0</b><span>check-ins</span></div>
+  <div class="stat"><b id="uniqueCount">0</b><span>unique</span></div>
+  <div class="stat"><b id="lastTime">—</b><span>last</span></div>
+</div>
+
+<section>
+  <div class="section-title">Quick add</div>
+  <div class="custom">
+    <input id="customAttraction" placeholder="Other attraction / show" />
+    <button onclick="addCustom()">Add</button>
+  </div>
+  <textarea id="pendingNote" class="noteBox" placeholder="Optional note for next check-in (seat, breakdown, child reaction, etc.)"></textarea>
+</section>
+
+<section>
+  <div class="section-title">Attractions</div>
+  <div id="rides" class="rides"></div>
+</section>
+
+<section>
+  <div class="section-title">Today’s log</div>
+  <div class="toolbar">
+    <button onclick="undoLast()">Undo last</button>
+    <button onclick="exportCSV()">Export CSV</button>
+    <button onclick="backupNow()">Backup now</button>
+    <button onclick="exportJSON()">Export JSON</button>
+    <button onclick="restoreBackup()">Restore backup</button>
+    <button onclick="copyJSON()">Copy JSON</button>
+    <button class="danger" onclick="clearAll()">Clear day</button>
+  </div>
+  <div id="log" class="log" style="margin-top:9px"></div>
+</section>
+<footer>Offline-friendly • dual local storage • use Chrome on Android • download a backup during the day</footer>
+</div>
+<div id="toast" class="toast"></div>
+<script>
+const STORAGE_KEY='disneyland_quick_checkin_v1';
+let currentPark='DL';
+const attractions={
+DL:[
+['Adventureland Treehouse','Adventureland'],['Alice in Wonderland','Fantasyland'],['Astro Orbitor','Tomorrowland'],['Autopia','Tomorrowland'],['Big Thunder Mountain Railroad','Frontierland'],['Buzz Lightyear Astro Blasters','Tomorrowland'],['Casey Jr. Circus Train','Fantasyland'],["Chip 'n' Dale's GADGETcoaster",'Mickey’s Toontown'],["Davy Crockett's Explorer Canoes",'Frontierland'],['Disneyland Monorail','Tomorrowland'],['Disneyland Railroad','Park-wide'],['Dumbo the Flying Elephant','Fantasyland'],['Finding Nemo Submarine Voyage','Tomorrowland'],['Haunted Mansion','New Orleans Square'],['Indiana Jones Adventure','Adventureland'],["it's a small world",'Fantasyland'],['Jungle Cruise','Adventureland'],['King Arthur Carrousel','Fantasyland'],['Mad Tea Party','Fantasyland'],['Main Street Vehicles','Main Street, U.S.A.'],['The Many Adventures of Winnie the Pooh','Bayou Country'],['Mark Twain Riverboat','Frontierland'],['Matterhorn Bobsleds','Fantasyland'],["Mickey & Minnie's Runaway Railway",'Mickey’s Toontown'],['Millennium Falcon: Smugglers Run',"Star Wars: Galaxy's Edge"],["Mr. Toad's Wild Ride",'Fantasyland'],["Peter Pan's Flight",'Fantasyland'],["Pinocchio's Daring Journey",'Fantasyland'],["Pirate's Lair on Tom Sawyer Island",'Frontierland'],['Pirates of the Caribbean','New Orleans Square'],["Roger Rabbit's Car Toon Spin",'Mickey’s Toontown'],['Sailing Ship Columbia','Frontierland'],['Sleeping Beauty Castle Walkthrough','Fantasyland'],["Snow White's Enchanted Wish",'Fantasyland'],['Space Mountain','Tomorrowland'],['Star Tours – The Adventures Continue','Tomorrowland'],['Star Wars: Rise of the Resistance',"Star Wars: Galaxy's Edge"],['Storybook Land Canal Boats','Fantasyland'],["Tiana's Bayou Adventure",'Bayou Country'],["Walt Disney's Enchanted Tiki Room",'Adventureland'],['Walt Disney – A Magical Life','Main Street, U.S.A.']
+],
+DCA:[
+['Animation Academy','Hollywood Land'],['The Bakery Tour','San Fransokyo Square'],['Games of Pixar Pier','Pixar Pier'],['Golden Zephyr','Paradise Gardens Park'],["Goofy's Sky School",'Paradise Gardens Park'],['Grizzly River Run','Grizzly Peak'],['Guardians of the Galaxy – Mission: BREAKOUT!','Avengers Campus'],['Guardians of the Galaxy – Monsters After Dark','Avengers Campus'],['Incredicoaster','Pixar Pier'],['Inside Out Emotional Whirlwind','Pixar Pier'],["Jessie's Critter Carousel",'Pixar Pier'],["Jumpin' Jellyfish",'Paradise Gardens Park'],["Luigi's Rollickin' Roadsters",'Cars Land'],["Mater's Junkyard Jamboree",'Cars Land'],["Mickey's PhilharMagic",'Hollywood Land'],['Monsters, Inc. Mike & Sulley to the Rescue!','Hollywood Land'],['Pixar Pal-A-Round – Non-Swinging','Pixar Pier'],['Pixar Pal-A-Round – Swinging','Pixar Pier'],['Radiator Springs Racers','Cars Land'],['Redwood Creek Challenge Trail','Grizzly Peak'],['Silly Symphony Swings','Paradise Gardens Park'],['Soarin’ Across America','Grizzly Peak'],['Sorcerer’s Workshop','Hollywood Land'],["The Little Mermaid – Ariel's Undersea Adventure",'Paradise Gardens Park'],['Toy Story Midway Mania!','Pixar Pier'],['Turtle Talk with Crush','Hollywood Land'],['WEB SLINGERS: A Spider-Man Adventure','Avengers Campus']
+]};
+
+const IDB_NAME='disneyland_quick_checkin_safe_v1';
+const IDB_STORE='snapshots';
+const SNAPSHOT_KEY='current';
+const BACKUP_META_KEY='disneyland_quick_checkin_backup_meta_v1';
+let memoryLog=[];
+let lastSavedAt=null;
+let idbReady=false;
+function safeParse(raw,fallback){try{return raw?JSON.parse(raw):fallback}catch(e){return fallback}}
+function normalizeSnapshot(v){
+  if(Array.isArray(v)) return {version:1,updatedAt:0,checkins:v};
+  if(v && Array.isArray(v.checkins)) return {version:1,updatedAt:Number(v.updatedAt)||0,checkins:v.checkins};
+  return {version:1,updatedAt:0,checkins:[]};
+}
+function localSnapshot(){return normalizeSnapshot(safeParse(localStorage.getItem(STORAGE_KEY),[]))}
+function loadLog(){return memoryLog}
+function openDB(){return new Promise((resolve,reject)=>{if(!('indexedDB' in window))return reject(new Error('IndexedDB unavailable'));const r=indexedDB.open(IDB_NAME,1);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains(IDB_STORE))db.createObjectStore(IDB_STORE)};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
+async function idbGet(key){const db=await openDB();return new Promise((resolve,reject)=>{const tx=db.transaction(IDB_STORE,'readonly');const r=tx.objectStore(IDB_STORE).get(key);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
+async function idbSet(key,value){const db=await openDB();return new Promise((resolve,reject)=>{const tx=db.transaction(IDB_STORE,'readwrite');tx.objectStore(IDB_STORE).put(value,key);tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error)})}
+function updateSaveUI(ok=true,msg='Saved locally'){
+ const el=document.getElementById('saveState'),tm=document.getElementById('saveTime');
+ if(el){el.textContent=msg;el.classList.toggle('saveok',ok)}
+ if(tm)tm.textContent=lastSavedAt?new Date(lastSavedAt).toLocaleTimeString([],{hour:'numeric',minute:'2-digit',second:'2-digit'}):'—';
+}
+function snapshotFrom(log){return {version:1,updatedAt:Date.now(),checkins:log}}
+function backupMeta(){return safeParse(localStorage.getItem(BACKUP_META_KEY),{lastDownloadedCount:0})||{lastDownloadedCount:0}}
+function updateBackupPrompt(){const el=document.getElementById('backupPrompt');if(!el)return;const delta=memoryLog.length-(backupMeta().lastDownloadedCount||0);el.classList.toggle('hidden',delta<5)}
+function saveLog(log){
+ memoryLog=Array.isArray(log)?log:[];
+ const snap=snapshotFrom(memoryLog);lastSavedAt=snap.updatedAt;
+ try{localStorage.setItem(STORAGE_KEY,JSON.stringify(snap));updateSaveUI(true,'Saved locally • 2 copies')}catch(e){updateSaveUI(false,'Saved to backup store only')}
+ idbSet(SNAPSHOT_KEY,snap).then(()=>{idbReady=true;updateSaveUI(true,'Saved locally • 2 copies')}).catch(()=>updateSaveUI(true,'Saved locally • 1 copy'));
+ const hist=safeParse(localStorage.getItem(STORAGE_KEY+'_history'),[])||[];hist.push(snap);while(hist.length>10)hist.shift();try{localStorage.setItem(STORAGE_KEY+'_history',JSON.stringify(hist))}catch(e){}
+ updateBackupPrompt();
+}
+async function initializeStorage(){
+ const local=localSnapshot();let remote={version:1,updatedAt:0,checkins:[]};
+ try{remote=normalizeSnapshot(await idbGet(SNAPSHOT_KEY));idbReady=true}catch(e){}
+ const chosen=(remote.updatedAt>local.updatedAt)?remote:local;
+ memoryLog=chosen.checkins;lastSavedAt=chosen.updatedAt||Date.now();
+ // Heal both stores from the newest valid copy.
+ try{localStorage.setItem(STORAGE_KEY,JSON.stringify({version:1,updatedAt:lastSavedAt,checkins:memoryLog}))}catch(e){}
+ try{await idbSet(SNAPSHOT_KEY,{version:1,updatedAt:lastSavedAt,checkins:memoryLog});idbReady=true}catch(e){}
+ updateSaveUI(true,idbReady?'Saved locally • 2 copies':'Saved locally • 1 copy');updateBackupPrompt();renderAll();
+}
+
+function fmtTime(iso){return new Date(iso).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}
+function fmtDate(iso){return new Date(iso).toLocaleDateString([], {year:'numeric',month:'2-digit',day:'2-digit'})}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1400)}
+function setPark(p){currentPark=p;document.getElementById('tabDL').classList.toggle('active',p==='DL');document.getElementById('tabDCA').classList.toggle('active',p==='DCA');renderRides()}
+function addCheckin(name,land,park=currentPark){const log=loadLog();const note=document.getElementById('pendingNote').value.trim();log.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random(),park,attraction:name,land:land||'',timestamp:new Date().toISOString(),note});saveLog(log);document.getElementById('pendingNote').value='';renderAll();toast('Checked in: '+name)}
+function addCustom(){const el=document.getElementById('customAttraction');const name=el.value.trim();if(!name)return;addCheckin(name,'Custom',currentPark);el.value=''}
+function undoLast(){const log=loadLog();if(!log.length)return toast('Nothing to undo');const x=log.pop();saveLog(log);renderAll();toast('Removed: '+x.attraction)}
+function clearAll(){if(!loadLog().length)return;if(confirm('Clear every check-in saved on this phone? Export first if you need them.')){saveLog([]);renderAll();toast('Day cleared')}}
+function countsByName(){const m={};for(const x of loadLog())m[x.park+'|'+x.attraction]=(m[x.park+'|'+x.attraction]||0)+1;return m}
+function renderRides(){const q=document.getElementById('search').value.trim().toLowerCase();const counts=countsByName();const root=document.getElementById('rides');root.innerHTML='';for(const [name,land] of attractions[currentPark]){if(q && !(name+' '+land).toLowerCase().includes(q))continue;const b=document.createElement('button');b.className='ride';const count=counts[currentPark+'|'+name]||0;b.innerHTML=`<div><div class="ride-name"></div><div class="ride-meta"></div></div><div class="badge">${count||'+'}</div>`;b.querySelector('.ride-name').textContent=name;b.querySelector('.ride-meta').textContent=land;b.onclick=()=>addCheckin(name,land,currentPark);root.appendChild(b)}}
+function renderLog(){const log=loadLog();const root=document.getElementById('log');root.innerHTML='';if(!log.length){root.innerHTML='<div class="muted">No check-ins yet.</div>';return}for(const x of [...log].reverse()){const e=document.createElement('div');e.className='entry';e.innerHTML=`<div class="entry-top"><div><span class="entry-name"></span><div class="ride-meta"></div></div><div class="entry-time"></div></div><div class="entry-note hidden"></div>`;e.querySelector('.entry-name').textContent=x.attraction;e.querySelector('.ride-meta').textContent=(x.park==='DL'?'Disneyland':'DCA')+(x.land?' • '+x.land:'');e.querySelector('.entry-time').textContent=fmtTime(x.timestamp);if(x.note){const n=e.querySelector('.entry-note');n.textContent=x.note;n.classList.remove('hidden')}root.appendChild(e)}}
+function renderStats(){const log=loadLog();document.getElementById('totalCount').textContent=log.length;document.getElementById('uniqueCount').textContent=new Set(log.map(x=>x.park+'|'+x.attraction)).size;document.getElementById('lastTime').textContent=log.length?fmtTime(log[log.length-1].timestamp):'—'}
+function renderAll(){renderRides();renderLog();renderStats()}
+function download(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
+function csvEscape(v){v=String(v??'');return /[",\n]/.test(v)?'"'+v.replaceAll('"','""')+'"':v}
+function exportCSV(){const log=loadLog();const rows=[['date','time','timestamp','park','attraction','land','note'],...log.map(x=>[fmtDate(x.timestamp),fmtTime(x.timestamp),x.timestamp,x.park,x.attraction,x.land,x.note])];download('disney_checkins_'+new Date().toISOString().slice(0,10)+'.csv',rows.map(r=>r.map(csvEscape).join(',')).join('\n'),'text/csv')}
+function backupPayload(){return {format:'Disneyland Quick Check-In Backup',version:2,exported_at:new Date().toISOString(),checkins:loadLog()}}
+function exportJSON(){download('disney_checkins_'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify(backupPayload(),null,2),'application/json')}
+function backupNow(){download('disney_checkins_BACKUP_'+new Date().toISOString().replace(/[:.]/g,'-')+'.json',JSON.stringify(backupPayload(),null,2),'application/json');localStorage.setItem(BACKUP_META_KEY,JSON.stringify({lastDownloadedCount:memoryLog.length,lastDownloadedAt:Date.now()}));updateBackupPrompt();toast('Backup downloaded')}
+function restoreBackup(){const inp=document.createElement('input');inp.type='file';inp.accept='.json,application/json';inp.onchange=()=>{const f=inp.files&&inp.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const obj=JSON.parse(rd.result);const arr=Array.isArray(obj)?obj:obj.checkins;if(!Array.isArray(arr))throw new Error('No check-ins found');if(!confirm('Restore '+arr.length+' check-ins from this backup? This replaces the current local log.'))return;saveLog(arr);renderAll();toast('Backup restored')}catch(e){alert('Could not restore this backup: '+e.message)}};rd.readAsText(f)};inp.click()}
+async function copyJSON(){const text=JSON.stringify(backupPayload(),null,2);try{await navigator.clipboard.writeText(text);toast('JSON copied')}catch(e){prompt('Copy this JSON:',text)}}
+window.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&memoryLog.length)saveLog(memoryLog)});
+initializeStorage();
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
