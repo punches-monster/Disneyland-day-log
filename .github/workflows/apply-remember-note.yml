@@ -1,0 +1,98 @@
+name: Apply Remember Note
+
+on:
+  push:
+    branches: ["main"]
+    paths: [".github/workflows/apply-remember-note.yml"]
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Red check then apply note feature
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          assert 'id="rememberText"' not in s, 'RED check expected note UI to be absent before implementation'
+          assert 'function addRememberNote()' not in s, 'RED check expected note function to be absent before implementation'
+          print('RED verified: remember-note feature absent')
+
+          dining_section='''<section>\n  <div class="section-title">Dining log</div>\n  <div class="diningGrid">\n    <input id="diningLocation" list="recentDiningLocations" placeholder="Restaurant / food location" />\n    <datalist id="recentDiningLocations"></datalist>\n    <input id="diningItems" placeholder="What did you get? (optional)" />\n    <textarea id="diningNote" placeholder="Optional dining note"></textarea>\n    <button onclick="addDiningEntry()">Add dining entry</button>\n  </div>\n</section>'''
+          remember_section=dining_section+'''\n\n<section>\n  <div class="section-title">Remember this</div>\n  <div class="diningGrid">\n    <input id="rememberPlace" placeholder="Place / location (optional)" />\n    <textarea id="rememberText" placeholder="Quick note — e.g. seasonal churro at this cart"></textarea>\n    <button onclick="addRememberNote()">Save note</button>\n  </div>\n</section>'''
+          assert dining_section in s
+          s=s.replace(dining_section,remember_section,1)
+
+          old='''function addDiningEntry(){const loc=document.getElementById('diningLocation').value.trim();if(!loc)return toast('Enter a dining location');const items=document.getElementById('diningItems').value.trim();const note=document.getElementById('diningNote').value.trim();const log=loadLog();log.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random(),type:'dining',dining_location:loc,items,timestamp:new Date().toISOString(),note});saveLog(log);document.getElementById('diningLocation').value='';document.getElementById('diningItems').value='';document.getElementById('diningNote').value='';renderAll();toast('Dining logged: '+loc)}'''
+          new=old+'''\nfunction addRememberNote(){const text=document.getElementById('rememberText').value.trim();if(!text)return toast('Enter a note');const place=document.getElementById('rememberPlace').value.trim();const log=loadLog();log.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random(),type:'note',place,timestamp:new Date().toISOString(),note:text});saveLog(log);document.getElementById('rememberText').value='';document.getElementById('rememberPlace').value='';renderAll();toast('Note saved')}'''
+          assert old in s
+          s=s.replace(old,new,1)
+
+          s=s.replace("if(!confirm('Delete this '+(x.type==='dining'?'dining entry':'attraction check-in')+'?'))return;","if(!confirm('Delete this '+(x.type==='dining'?'dining entry':x.type==='note'?'note':'attraction check-in')+'?'))return;",1)
+
+          old_edit="""if(x.type==='dining'){const loc=prompt('Dining location',x.dining_location||'');if(loc===null)return;const items=prompt('What did you get?',x.items||'');if(items===null)return;const note=prompt('Note',x.note||'');if(note===null)return;x.dining_location=loc.trim()||x.dining_location;x.items=items.trim();x.note=note.trim()}else{const name=prompt('Attraction / show',x.attraction||'');if(name===null)return;const note=prompt('Note',x.note||'');if(note===null)return;x.attraction=name.trim()||x.attraction;x.note=note.trim()}"""
+          new_edit="""if(x.type==='dining'){const loc=prompt('Dining location',x.dining_location||'');if(loc===null)return;const items=prompt('What did you get?',x.items||'');if(items===null)return;const note=prompt('Note',x.note||'');if(note===null)return;x.dining_location=loc.trim()||x.dining_location;x.items=items.trim();x.note=note.trim()}else if(x.type==='note'){const place=prompt('Place / location',x.place||'');if(place===null)return;const note=prompt('Note',x.note||'');if(note===null)return;if(!note.trim())return alert('Note cannot be blank');x.place=place.trim();x.note=note.trim()}else{const name=prompt('Attraction / show',x.attraction||'');if(name===null)return;const note=prompt('Note',x.note||'');if(note===null)return;x.attraction=name.trim()||x.attraction;x.note=note.trim()}"""
+          assert old_edit in s
+          s=s.replace(old_edit,new_edit,1)
+
+          s=s.replace("if(x.type==='dining'){const log=loadLog();log.push({...x,id:crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random(),timestamp:new Date().toISOString()});saveLog(log);renderAll();toast('Dining logged: '+x.dining_location)}else addCheckin(x.attraction,x.land,x.park)","if(x.type==='dining'){const log=loadLog();log.push({...x,id:crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random(),timestamp:new Date().toISOString()});saveLog(log);renderAll();toast('Dining logged: '+x.dining_location)}else if(x.type==='note'){const log=loadLog();log.push({...x,id:crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random(),timestamp:new Date().toISOString()});saveLog(log);renderAll();toast('Note repeated')}else addCheckin(x.attraction,x.land,x.park)",1)
+          s=s.replace("toast('Removed: '+(x.type==='dining'?x.dining_location:x.attraction))","toast('Removed: '+(x.type==='dining'?x.dining_location:x.type==='note'?(x.place||'note'):x.attraction))",1)
+          s=s.replace("if(x.type==='dining')continue;","if(x.type==='dining'||x.type==='note')continue;",1)
+          s=s.replace("Nothing logged yet. Tap an attraction or add a dining entry.","Nothing logged yet. Tap an attraction, add dining, or save a note.",1)
+
+          old_render="""const dining=x.type==='dining';e.querySelector('.entry-kind').textContent=dining?'Dining':'Attraction';e.querySelector('.entry-name').textContent=dining?x.dining_location:x.attraction;e.querySelector('.ride-meta').textContent=dining?(x.items||'Meal / snack'):(x.park==='DL'?'Disneyland':'DCA')+(x.land?' • '+x.land:'');e.querySelector('.entry-time').textContent=fmtTime(x.timestamp);if(x.note){const n=e.querySelector('.entry-note');n.textContent=x.note;n.classList.remove('hidden')}e.querySelector('.repeatBtn').onclick=()=>repeatEntry(x.id);"""
+          new_render="""const dining=x.type==='dining',remember=x.type==='note';e.querySelector('.entry-kind').textContent=dining?'Dining':remember?'Note':'Attraction';e.querySelector('.entry-name').textContent=dining?x.dining_location:remember?(x.place||'Quick note'):x.attraction;e.querySelector('.ride-meta').textContent=dining?(x.items||'Meal / snack'):remember?'Remember this':(x.park==='DL'?'Disneyland':'DCA')+(x.land?' • '+x.land:'');e.querySelector('.entry-time').textContent=fmtTime(x.timestamp);if(x.note){const n=e.querySelector('.entry-note');n.textContent=x.note;n.classList.remove('hidden')}if(remember)e.querySelector('.repeatBtn').classList.add('hidden');e.querySelector('.repeatBtn').onclick=()=>repeatEntry(x.id);"""
+          assert old_render in s
+          s=s.replace(old_render,new_render,1)
+
+          old_stats="""const rides=log.filter(x=>x.type!=='dining'),dining=log.filter(x=>x.type==='dining');document.getElementById('totalCount').textContent=rides.length;document.getElementById('uniqueCount').textContent=new Set(rides.map(x=>x.park+'|'+x.attraction)).size;document.getElementById('diningCount').textContent=dining.length;document.getElementById('lastTime').textContent=log.length?fmtTime(log[log.length-1].timestamp):'—';const la=document.getElementById('lastAction');if(la){if(!log.length){la.textContent='Nothing logged yet.';la.classList.add('muted')}else{const x=log[log.length-1],name=x.type==='dining'?x.dining_location:x.attraction;la.textContent='Last: '+(x.type==='dining'?'Dining • ':'')+name+' • '+fmtTime(x.timestamp);la.classList.remove('muted')}}"""
+          new_stats="""const rides=log.filter(x=>!x.type),dining=log.filter(x=>x.type==='dining');document.getElementById('totalCount').textContent=rides.length;document.getElementById('uniqueCount').textContent=new Set(rides.map(x=>x.park+'|'+x.attraction)).size;document.getElementById('diningCount').textContent=dining.length;document.getElementById('lastTime').textContent=log.length?fmtTime(log[log.length-1].timestamp):'—';const la=document.getElementById('lastAction');if(la){if(!log.length){la.textContent='Nothing logged yet.';la.classList.add('muted')}else{const x=log[log.length-1],name=x.type==='dining'?x.dining_location:x.type==='note'?(x.place||x.note):x.attraction;la.textContent='Last: '+(x.type==='dining'?'Dining • ':x.type==='note'?'Note • ':'')+name+' • '+fmtTime(x.timestamp);la.classList.remove('muted')}}"""
+          assert old_stats in s
+          s=s.replace(old_stats,new_stats,1)
+
+          old_recent="""for(const x of [...loadLog()].reverse()){const key=x.type==='dining'?'d|'+x.dining_location:'a|'+x.park+'|'+x.attraction;if(seen.has(key))continue;"""
+          new_recent="""for(const x of [...loadLog()].reverse()){if(x.type==='note')continue;const key=x.type==='dining'?'d|'+x.dining_location:'a|'+x.park+'|'+x.attraction;if(seen.has(key))continue;"""
+          assert old_recent in s
+          s=s.replace(old_recent,new_recent,1)
+
+          old_csv="""const rows=[['date','time','timestamp','entry_type','park','attraction','land','dining_location','items','note'],...log.map(x=>[fmtDate(x.timestamp),fmtTime(x.timestamp),x.timestamp,x.type==='dining'?'dining':'attraction',x.park||'',x.attraction||'',x.land||'',x.dining_location||'',x.items||'',x.note||''])]"""
+          new_csv="""const rows=[['date','time','timestamp','entry_type','park','attraction','land','dining_location','items','place','note'],...log.map(x=>[fmtDate(x.timestamp),fmtTime(x.timestamp),x.timestamp,x.type==='dining'?'dining':x.type==='note'?'note':'attraction',x.park||'',x.attraction||'',x.land||'',x.dining_location||'',x.items||'',x.place||'',x.note||''])]"""
+          assert old_csv in s
+          s=s.replace(old_csv,new_csv,1)
+          s=s.replace("version:3,exported_at","version:4,exported_at",1)
+
+          p.write_text(s,encoding='utf-8')
+          sw=Path('sw.js')
+          sws=sw.read_text(encoding='utf-8').replace("disneyland-day-log-v2","disneyland-day-log-v3")
+          sw.write_text(sws,encoding='utf-8')
+
+          s2=p.read_text(encoding='utf-8')
+          for needle in ['id="rememberText"','id="rememberPlace"','function addRememberNote()','type:\'note\'','Remember this']:
+              assert needle in s2, needle
+          assert "disneyland-day-log-v3" in sw.read_text(encoding='utf-8')
+          print('GREEN verified: remember-note feature and cache bump present')
+          PY
+      - name: JavaScript syntax check
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          js=s.split('<script>',1)[1].split('</script>',1)[0]
+          Path('/tmp/daylog.js').write_text(js,encoding='utf-8')
+          PY
+          node --check /tmp/daylog.js
+      - name: Commit updated app
+        shell: bash
+        run: |
+          git config user.name "punches-monster"
+          git config user.email "114430638+punches-monster@users.noreply.github.com"
+          git add index.html sw.js
+          git commit -m "Add quick remember notes"
+          git push
